@@ -1,0 +1,14 @@
+apiVersion: elbv2.k8s.aws/v1beta1
+kind: TargetGroupBinding
+metadata:
+  labels:
+    ingress.k8s.aws/stack: project-cd-alb
+  name: grafana-tgb
+  namespace: monitoring
+spec:
+  ipAddressType: ipv4
+  serviceRef:
+    name: grafana
+    port: 80
+  targetGroupARN: arn:aws:elasticloadbalancing:ap-northeast-2:123456789010:targetgroup/project-grafana/f71db0d51bac0278
+  targetType: instance

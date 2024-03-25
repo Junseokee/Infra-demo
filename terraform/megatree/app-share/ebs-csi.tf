@@ -1,0 +1,69 @@
+data "aws_caller_identity" "current" {}
+data "http" "ebs_csi_iam_policy" {
+  url = "https://raw.githubusercontent.com/kubernetes-sigs/aws-ebs-csi-driver/master/docs/example-iam-policy.json"
+
+  # Optional request headers
+  request_headers = {
+    Accept = "application/json"
+  }
+}
+
+resource "aws_iam_policy" "ebs_csi_iam_policy" {
+  name        = "${local.name}-share-AmazonEKS_EBS_CSI_Driver_Policy"
+  path        = "/"
+  description = "EBS CSI IAM Policy"
+  #policy = data.http.ebs_csi_iam_policy.body
+  policy = data.http.ebs_csi_iam_policy.response_body
+}
+
+resource "aws_iam_role" "ebs_csi_iam_role" {
+  name = "${local.name}-ebs-csi-iam-role-share"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRoleWithWebIdentity"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Federated = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${replace(aws_eks_cluster.share_cluster.identity[0].oidc[0].issuer, "https://", "")}"
+        }
+        Condition = {
+          "StringEquals" = {
+            "${replace(aws_eks_cluster.share_cluster.identity[0].oidc[0].issuer, "https://", "")}:sub" = "system:serviceaccount:kube-system:ebs-csi-controller-sa",
+          },
+          "StringLike" = {
+            "${replace(aws_eks_cluster.share_cluster.identity[0].oidc[0].issuer, "https://", "")}:aud" = "sts.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+  tags = {
+    tag-key = "${local.name}-ebs-csi-iam-role"
+  }
+}
+resource "aws_iam_role_policy_attachment" "ebs_csi_iam_role_policy_attach" {
+  policy_arn = aws_iam_policy.ebs_csi_iam_policy.arn
+  role       = aws_iam_role.ebs_csi_iam_role.name
+}
+
+data "tls_certificate" "share_cluster" {
+  url = aws_eks_cluster.share_cluster.identity[0].oidc[0].issuer
+}
+
+resource "aws_iam_openid_connect_provider" "share_oidc_provider" {
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = [data.tls_certificate.share_cluster.certificates[0].sha1_fingerprint]
+  url             = data.tls_certificate.share_cluster.url
+}
+
+resource "aws_eks_addon" "share_cluster_ebs_csi" {
+  cluster_name                = aws_eks_cluster.share_cluster.name
+  addon_name                  = "aws-ebs-csi-driver"
+  service_account_role_arn    = aws_iam_role.ebs_csi_iam_role.arn
+  resolve_conflicts_on_create = "OVERWRITE"
+  tags = {
+    "eks_addon" = "aws-ebs-csi-driver"
+  }
+}

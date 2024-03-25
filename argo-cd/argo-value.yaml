@@ -1,0 +1,17 @@
+server:
+  service:
+    type: NodePort
+
+configs:
+  cm:
+    accounts.develop: apiKey, login
+  rbac:
+    policy.csv: |
+      p, role:dev, applications, *, */*, allow
+      p, role:dev, projects, *, *, allow
+      p, role:dev, repositories, *, *, allow
+      g, develop, role:dev
+  secret:
+    argocdServerAdminPassword: "project"
+  params:
+    server.insecure: true

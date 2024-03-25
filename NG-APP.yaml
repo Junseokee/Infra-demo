@@ -1,0 +1,84 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: es-app
+  region: ap-northeast-2
+  version: "1.28"
+
+vpc:
+  id: "vpc-0411476bd9c18efb6"
+  autoAllocateIPv6: false
+  clusterEndpoints:
+    privateAccess: true
+    publicAccess: true
+  #sharedNodeSecurityGroup: "sg-0ac390268dbf42573"
+  subnets:
+    public:
+      ap-northeast-2a:
+        id: "subnet-0036d3fec96c58412"
+      ap-northeast-2b:
+        id: "subnet-08be5c851a00eaa1b"
+      ap-northeast-2c:
+        id: "subnet-035e482dc3cd9f2ec"
+    private:
+      ap-northeast-2a:
+        id: "subnet-01b1142cbc8f08584"
+      ap-northeast-2b:
+        id: "subnet-09f8f1c30a17cbbbb"
+      ap-northeast-2c:
+        id: "subnet-06f5f14b00d8a19d4"
+
+
+nodeGroups:
+  - name: ng-app
+    iam:
+      withAddonPolicies:
+        imageBuilder: true
+        autoScaler: true
+        externalDNS: true
+        certManager: true
+        appMesh: true
+        appMeshPreview: true
+        ebs: true
+        fsx: true
+        efs: true
+        awsLoadBalancerController: true
+        xRay: true
+        cloudWatch: true
+    amiFamily: AmazonLinux2
+    availabilityZones: [
+      "ap-northeast-2a",
+      "ap-northeast-2b",
+      "ap-northeast-2c"
+    ]
+    privateNetworking: true
+    minSize: 3
+    maxSize: 5
+    volumeSize: 100
+    volumeType: gp2
+    instancesDistribution:
+      maxPrice: 0.25
+      instanceTypes:
+        - c5.2xlarge
+        # - m6g.xlarge
+        # - m6gd.xlarge
+      onDemandBaseCapacity: 0
+      onDemandPercentageAboveBaseCapacity: 0 # all the instances will be Spot Instances
+      spotAllocationStrategy: capacity-optimized
+
+iam:
+  withOIDC: true
+
+#addons:
+##  - name: vpc-cni
+##    # all below properties are optional
+##    version: v1.15.1-eksbuild.1
+#  - name: CoreDNS
+#    version: v1.10.1-eksbuild.4
+#    configurationValues: |-
+#      replicaCount: 3
+#      resolveConflicts: overwrite
+#  - name: kube-proxy
+#    version: v1.28.2-eksbuild.2
+#  - name: ebs-csi-driver
+#    version: v1.26.1-eksbuild.1

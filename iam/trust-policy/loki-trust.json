@@ -1,0 +1,31 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::123456789010:oidc-provider/oidc.eks.ap-northeast-2.amazonaws.com/id/CDB14466CCA7813CFC370FBC8B73A414"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "oidc.eks.ap-northeast-2.amazonaws.com/id/CDB14466CCA7813CFC370FBC8B73A414:sub": "system:serviceaccount:monitoring:loki",
+          "oidc.eks.ap-northeast-2.amazonaws.com/id/CDB14466CCA7813CFC370FBC8B73A414:aud": "sts.amazonaws.com"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "arn:aws:iam::123456789010:oidc-provider/oidc.eks.ap-northeast-2.amazonaws.com/id/CDB14466CCA7813CFC370FBC8B73A414"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity",
+      "Condition": {
+        "StringEquals": {
+          "oidc.eks.ap-northeast-2.amazonaws.com/id/CDB14466CCA7813CFC370FBC8B73A414:sub": "system:serviceaccount:monitoring:loki-compactor",
+          "oidc.eks.ap-northeast-2.amazonaws.com/id/CDB14466CCA7813CFC370FBC8B73A414:aud": "sts.amazonaws.com"
+        }
+      }
+    }
+  ]
+}

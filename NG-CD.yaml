@@ -1,0 +1,82 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: es-app
+  region: ap-northeast-2
+  version: "1.28"
+
+vpc:
+  id: "vpc-0942740a081c49381"
+  autoAllocateIPv6: false
+  clusterEndpoints:
+    privateAccess: true
+    publicAccess: true
+  #sharedNodeSecurityGroup: "sg-0ac390268dbf42573"
+  subnets:
+    public:
+      ap-northeast-2a:
+        id: "subnet-0b8cfbf88808df374"
+      ap-northeast-2b:
+        id: "subnet-0837f37568f1692f9"
+      ap-northeast-2c:
+        id: "subnet-019a8c2e641a3036a"
+    private:
+      ap-northeast-2a:
+        id: "subnet-0311a27a04deb296d"
+      ap-northeast-2b:
+        id: "subnet-0688a0f505eb5ec6c"
+      ap-northeast-2c:
+        id: "subnet-099069e352744e6ae"
+
+
+nodeGroups:
+  - name: ng-cd
+    iam:
+      withAddonPolicies:
+        imageBuilder: true
+        autoScaler: true
+        externalDNS: true
+        certManager: true
+        appMesh: true
+        appMeshPreview: true
+        ebs: true
+        fsx: true
+        efs: true
+        awsLoadBalancerController: true
+        xRay: true
+        cloudWatch: true
+    amiFamily: AmazonLinux2
+    availabilityZones: [
+      "ap-northeast-2a",
+      "ap-northeast-2b",
+      "ap-northeast-2c"
+    ]
+    minSize: 3
+    maxSize: 5
+    desiredCapacity: 3
+    volumeSize: 100
+    volumeType: gp2
+    instancesDistribution:
+      maxPrice: 0.25
+      instanceTypes:
+        - c5.2xlarge
+        # - m6g.xlarge
+        # - m6gd.xlarge
+      onDemandBaseCapacity: 0
+      onDemandPercentageAboveBaseCapacity: 0 # all the instances will be Spot Instances
+      spotAllocationStrategy: capacity-optimized
+
+iam:
+  withOIDC: true
+
+addons:
+  - name: vpc-cni
+    # all below properties are optional
+    version: v1.15.1-eksbuild.1
+
+  - name: coredns
+    version: v1.10.1-eksbuild.4
+  - name: kube-proxy
+    version: v1.28.2-eksbuild.2
+  - name: aws-ebs-csi-driver
+    version: v1.26.1-eksbuild.1

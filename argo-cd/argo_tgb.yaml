@@ -1,0 +1,14 @@
+apiVersion: elbv2.k8s.aws/v1beta1
+kind: TargetGroupBinding
+metadata:
+  labels:
+    ingress.k8s.aws/stack: project-argocd
+  name: argo-tgb
+  namespace: argo
+spec:
+  ipAddressType: ipv4
+  serviceRef:
+    name: argo-argocd-server
+    port: 80
+  targetGroupARN: arn:aws:elasticloadbalancing:ap-northeast-2:123456789010:targetgroup/argo/3a381a51bb05e546
+  targetType: instance
