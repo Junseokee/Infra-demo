@@ -211,16 +211,12 @@ TargetGroupBinding
 2. aws-load-balancer-controller에 내장되어 함께 배포된 TargetGroupBinding 리소스 배포
 3. TG 자동 생성
 
-![image](https://github.com/Junseokee/Infra-demo/assets/102888442/c66b9048-676c-42c6-8ddc-9abfdfe86500)
-
 4. Internal ALB에서 Listener Rule을 TG과 연결 → Actions를 생성된 TG으로 지정
 * Health checks 오류 발생시 Success codes를 200 → 200-399로 변경 (301로 반환하는 경우 존재)
 
 5. Conditions 설정
 - HTTP Host Header is {외부 도메인}
 - Path Pattern is /*
-
-![image](https://github.com/Junseokee/Infra-demo/assets/102888442/ae95e6e6-5cf0-4dea-ba88-6be0f984688b)
 
 --- 
 
